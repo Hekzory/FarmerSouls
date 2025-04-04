@@ -1276,6 +1276,9 @@ MonoBehaviour:
   zOffset: 0
   terrainMaterial: {fileID: 2100000, guid: 3e3b2408274c32042b84ca57126a705c, type: 2}
   parentGameObject: {fileID: 1199793774}
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 512
   gardenBedPrefab: {fileID: 1692538861216328406, guid: 8940dac7245eb4640b0c960f9a157700, type: 3}
   numberOfGardenBeds: 10
   minDistanceBetweenBeds: 10
@@ -1428,8 +1431,13 @@ MonoBehaviour:
   thirdPersonOrbitDistance: 3
   minYAngle: -80
   maxYAngle: 80
+  cameraCollisionMask:
+    serializedVersion: 2
+    m_Bits: 512
   skyboxMaterial: {fileID: 2100000, guid: a1377202c96d3084288a2cbf76204e60, type: 2}
   playerVisuals: {fileID: 1589380831}
+  cameraSwitchKey: 99
+  jumpKey: 32
 --- !u!143 &1589380835
 CharacterController:
   m_ObjectHideFlags: 0

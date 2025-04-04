@@ -28,6 +28,9 @@ public class TerrainGenerator : MonoBehaviour
     [Tooltip("Optional GameObject to parent the terrain to. If not assigned, it parents to this GameObject.")]
     public GameObject parentGameObject;
 
+    [Tooltip("Layer to assign to the generated terrain, usually for camera collision.")]
+    public LayerMask terrainLayer;
+
     [Header("Garden Bed Settings")]
     [Tooltip("Prefab of the garden bed to place on the terrain.")]
     public GameObject gardenBedPrefab;
@@ -93,6 +96,21 @@ public class TerrainGenerator : MonoBehaviour
         terrain = terrainGameObject.GetComponent<Terrain>();
         terrain.materialTemplate = terrainMaterial;
 
+        // Set the terrain to the specified layer for camera collision
+        if (terrainLayer != 0)
+        {
+            // Convert LayerMask to layer index
+            int layerIndex = GetLayerFromMask(terrainLayer);
+            if (layerIndex != -1)
+            {
+                terrainGameObject.layer = layerIndex;
+            }
+            else
+            {
+                Debug.LogWarning("Invalid layer mask specified. Using default layer.");
+            }
+        }
+
         // Parent the terrain to the specified GameObject or this one
         if (parentGameObject != null)
         {
@@ -105,6 +123,23 @@ public class TerrainGenerator : MonoBehaviour
 
         // Optional: Center the terrain
         terrainGameObject.transform.position = new Vector3(-width / 2f, 0, -length / 2f);
+    }
+    
+    // Helper method to get the first layer index from a layer mask
+    private int GetLayerFromMask(LayerMask mask)
+    {
+        int bitmask = mask.value;
+        
+        // Find the index of the first layer that is included in the mask
+        for (int i = 0; i < 32; i++)
+        {
+            if (((1 << i) & bitmask) != 0)
+            {
+                return i;
+            }
+        }
+        
+        return -1; // No layer found
     }
     
     void PlaceGardenBeds()
