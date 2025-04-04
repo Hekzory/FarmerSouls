@@ -1214,8 +1214,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1199793776}
-  - component: {fileID: 1199793777}
   - component: {fileID: 1199793778}
+  - component: {fileID: 1199793777}
   m_Layer: 0
   m_Name: SpawnManager
   m_TagString: Untagged
@@ -1256,6 +1256,7 @@ MonoBehaviour:
   maxZ: 10
   character: {fileID: 1589380831}
   spawnHeightOffset: 0.1
+  maxSpawnAttempts: 10
 --- !u!114 &1199793778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1279,6 +1280,13 @@ MonoBehaviour:
   terrainLayer:
     serializedVersion: 2
     m_Bits: 512
+  octaves: 4
+  persistence: 0.5
+  lacunarity: 2
+  flattenFactor: 0.035
+  enableBiomes: 1
+  biomeScale: 100
+  biomeInfluence: 0.3
   gardenBedPrefab: {fileID: 1692538861216328406, guid: 8940dac7245eb4640b0c960f9a157700, type: 3}
   numberOfGardenBeds: 10
   minDistanceBetweenBeds: 10

@@ -31,6 +31,34 @@ public class TerrainGenerator : MonoBehaviour
     [Tooltip("Layer to assign to the generated terrain, usually for camera collision.")]
     public LayerMask terrainLayer;
 
+    [Header("Noise Settings")]
+    [Tooltip("Number of noise layers to combine for more natural-looking terrain.")]
+    [Range(1, 8)]
+    public int octaves = 4;
+
+    [Tooltip("How much each octave contributes to the overall shape. Higher = rougher.")]
+    [Range(0, 1)]
+    public float persistence = 0.5f;
+
+    [Tooltip("Change in frequency between octaves. Higher = more detail.")]
+    [Range(1, 4)]
+    public float lacunarity = 2.0f;
+
+    [Tooltip("Flatten the terrain overall for farming.")]
+    [Range(0, 1)]
+    public float flattenFactor = 0.7f;
+
+    [Header("Biome Settings")]
+    [Tooltip("Enable biome-like regions with varying height.")]
+    public bool enableBiomes = true;
+
+    [Tooltip("Scale of the biome regions. Larger = bigger regions.")]
+    public float biomeScale = 100f;
+
+    [Tooltip("Strength of the biome influence on height.")]
+    [Range(0, 1)]
+    public float biomeInfluence = 0.3f;
+
     [Header("Garden Bed Settings")]
     [Tooltip("Prefab of the garden bed to place on the terrain.")]
     public GameObject gardenBedPrefab;
@@ -76,19 +104,8 @@ public class TerrainGenerator : MonoBehaviour
         terrainData.heightmapResolution = width + 1;
         terrainData.size = new Vector3(width, heightMultiplier, length);
 
-        // Apply Perlin noise to the terrain
-        float[,] heights = new float[width + 1, length + 1];
-        for (int z = 0; z <= length; z++)
-        {
-            for (int x = 0; x <= width; x++)
-            {
-                float xCoord = (float)x / width * scale + xOffset;
-                float zCoord = (float)z / length * scale + zOffset;
-                float sample = Mathf.PerlinNoise(xCoord, zCoord);
-                heights[x, z] = sample;
-            }
-        }
-
+        // Apply improved noise to the terrain
+        float[,] heights = GenerateHeightMap();
         terrainData.SetHeights(0, 0, heights);
 
         // Create a new Terrain GameObject
@@ -123,6 +140,90 @@ public class TerrainGenerator : MonoBehaviour
 
         // Optional: Center the terrain
         terrainGameObject.transform.position = new Vector3(-width / 2f, 0, -length / 2f);
+    }
+
+    float[,] GenerateHeightMap()
+    {
+        float[,] heights = new float[width + 1, length + 1];
+        System.Random prng = new System.Random(Random.Range(0, 100000));
+        
+        // Create offsets for each octave to make them sample different parts of the noise
+        Vector2[] octaveOffsets = new Vector2[octaves];
+        for (int i = 0; i < octaves; i++) {
+            float offsetX = prng.Next(-100000, 100000) + xOffset;
+            float offsetZ = prng.Next(-100000, 100000) + zOffset;
+            octaveOffsets[i] = new Vector2(offsetX, offsetZ);
+        }
+
+        float maxNoiseHeight = float.MinValue;
+        float minNoiseHeight = float.MaxValue;
+
+        // Find max possible height to normalize values
+        for (int z = 0; z <= length; z++) {
+            for (int x = 0; x <= width; x++) {
+                float amplitude = 1;
+                float frequency = 1;
+                float noiseHeight = 0;
+
+                // Compute fractal Brownian motion (layered noise)
+                for (int i = 0; i < octaves; i++) {
+                    float xCoord = (float)x / width * scale * frequency + octaveOffsets[i].x;
+                    float zCoord = (float)z / length * scale * frequency + octaveOffsets[i].y;
+
+                    // Use Unity's Perlin noise
+                    float perlinValue = Mathf.PerlinNoise(xCoord, zCoord) * 2 - 1;
+                    noiseHeight += perlinValue * amplitude;
+
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+
+                // Track min and max for normalization
+                if (noiseHeight > maxNoiseHeight) maxNoiseHeight = noiseHeight;
+                if (noiseHeight < minNoiseHeight) minNoiseHeight = noiseHeight;
+            }
+        }
+
+        // Calculate actual height values with biome influence
+        for (int z = 0; z <= length; z++) {
+            for (int x = 0; x <= width; x++) {
+                float amplitude = 1;
+                float frequency = 1;
+                float noiseHeight = 0;
+
+                for (int i = 0; i < octaves; i++) {
+                    float xCoord = (float)x / width * scale * frequency + octaveOffsets[i].x;
+                    float zCoord = (float)z / length * scale * frequency + octaveOffsets[i].y;
+
+                    float perlinValue = Mathf.PerlinNoise(xCoord, zCoord) * 2 - 1;
+                    noiseHeight += perlinValue * amplitude;
+
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+
+                // Normalize height between 0 and 1
+                float normalizedHeight = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseHeight);
+
+                // Apply biome influence if enabled
+                if (enableBiomes) {
+                    float biomeValue = Mathf.PerlinNoise(
+                        (float)x / width * biomeScale + xOffset * 3.7f,
+                        (float)z / length * biomeScale + zOffset * 3.7f
+                    );
+                    
+                    // Use biome value to affect height, but keep it subtle for farming
+                    normalizedHeight = Mathf.Lerp(normalizedHeight, biomeValue, biomeInfluence);
+                }
+
+                // Apply flattening for farming terrain (push values toward 0.5)
+                normalizedHeight = Mathf.Lerp(normalizedHeight, 0.5f, flattenFactor);
+                
+                heights[x, z] = normalizedHeight;
+            }
+        }
+
+        return heights;
     }
     
     // Helper method to get the first layer index from a layer mask
@@ -265,4 +366,16 @@ public class TerrainGenerator : MonoBehaviour
             DestroyImmediate(container);
         }
     }
+
+    #if UNITY_EDITOR
+    // Method to preview generation in the editor
+    public void PreviewGeneration()
+    {
+        if (terrainGameObject != null)
+        {
+            DestroyImmediate(terrainGameObject);
+        }
+        GenerateTerrain();
+    }
+    #endif
 }

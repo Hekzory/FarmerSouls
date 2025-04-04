@@ -63,13 +63,13 @@ public class TilageDirtParticles : MonoBehaviour
 
     void InitializeParticleSystem()
     {
-        if (_isInitialized) return; // Already done. Efficiency.
+        if (_isInitialized) return;
 
-        // Ensure we have a material. Crucial. Without it, particles are invisible ghosts.
+        // Ensure we have a material.
         if (particleMaterial == null)
         {
             Debug.LogError($"[Nox] TilageDirtParticles on {gameObject.name}: Particle Material is NOT assigned. Dirt remains unseen.", this);
-            return; // Abort initialization. No material, no particles.
+            return;
         }
 
         // Attempt to find an existing ParticleSystem. If not found, create one.
