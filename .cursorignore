@@ -1,0 +1,74 @@
+# Cursor should ignore these folders for better performance
+Library/
+Temp/
+obj/
+Build/
+Builds/
+Logs/
+MemoryCaptures/
+Recordings/
+UserSettings/
+CacheServer/
+PackageCache/
+SnapshotFolder/
+
+# Builds and packages
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Large binary files
+*.fbx
+*.tga
+*.png
+*.jpg
+*.jpeg
+*.mp3
+*.wav
+*.mp4
+*.mov
+*.exr
+*.hdr
+*.avi
+*.psd
+*.ai
+*.tif
+*.tiff
+*.bmp
+*.gif
+*.3ds
+*.max
+*.blend
+*.dae
+*.obj
+*.mtl
+
+# Unity-specific large files
+*.asset
+*.unity
+*.prefab
+
+# Addressable assets
+Assets/AddressableAssetsData/*/*.bin*
+
+# Package files
+Packages/
+
+# Unity generated schemas
+UIElementsSchema/
+
+# Third-party assets folders that may be large
+Assets/AssetStoreTools/
+Assets/TextMesh Pro/
+Assets/Plugins/
+Assets/ExternalDependencies/
+
+# VCS folders
+.git/
+.svn/
+.plastic/
+
+# Generated files
+*.generated.cs
+*.cs.meta
