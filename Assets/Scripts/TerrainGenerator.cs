@@ -63,6 +63,9 @@ public class TerrainGenerator : MonoBehaviour
     [Tooltip("Prefab of the garden bed to place on the terrain.")]
     public GameObject gardenBedPrefab;
 
+    [Tooltip("Tag to assign to garden beds")]
+    public string gardenBedTag = "Interactable";
+
     [Tooltip("Number of garden beds to generate.")]
     public int numberOfGardenBeds = 10;
 
@@ -272,6 +275,9 @@ public class TerrainGenerator : MonoBehaviour
             {
                 // Instantiate the garden bed
                 GameObject gardenBed = Instantiate(gardenBedPrefab, worldPos, Quaternion.identity, gardenBedsContainer.transform);
+                
+                // Set the tag
+                gardenBed.tag = gardenBedTag;
                 
                 // Apply random rotation around Y axis
                 float randomYRotation = Random.Range(0, 360f);

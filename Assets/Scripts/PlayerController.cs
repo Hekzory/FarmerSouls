@@ -26,6 +26,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private KeyCode cameraSwitchKey = KeyCode.C;
     [SerializeField] private KeyCode jumpKey = KeyCode.Space;
 
+    [Header("Interaction Settings")]
+    [SerializeField] private float interactionRange = 2.0f;
+    [SerializeField] private string interactableTag = "Interactable";
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
+
     private CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
     private Camera firstPersonCamera;
@@ -39,6 +44,8 @@ public class PlayerController : MonoBehaviour
     // Camera Rotation Variables
     private float rotationX = 0.0f; // Vertical rotation (around X axis)
     private float rotationY = 0.0f; // Horizontal rotation (around Y axis)
+
+    private GameObject currentInteractable;
 
     void Start()
     {
@@ -73,6 +80,7 @@ public class PlayerController : MonoBehaviour
         HandleCameraRotation();
         HandleMovement();
         HandleCameraSwitching();
+        HandleInteraction();
     }
 
     void CreateCameras()
@@ -314,5 +322,54 @@ public class PlayerController : MonoBehaviour
         
         // Apply rotation to the player
         transform.rotation = Quaternion.Euler(0, rotationY, 0);
+    }
+
+    void HandleInteraction()
+    {
+        // Cast a ray from the camera to detect interactable objects
+        Ray ray;
+        if (isFirstPerson)
+        {
+            ray = firstPersonCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        }
+        else
+        {
+            ray = thirdPersonCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        }
+
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, interactionRange))
+        {
+            // Check if the hit object has the interactable tag
+            if (hit.collider.CompareTag(interactableTag))
+            {
+                currentInteractable = hit.collider.gameObject;
+                
+                // Handle interaction input
+                if (Input.GetKeyDown(interactKey))
+                {
+                    // Try to get an IInteractable component and call its interact method
+                    IInteractable interactable = currentInteractable.GetComponent<IInteractable>();
+                    if (interactable != null)
+                    {
+                        interactable.Interact();
+                    }
+                }
+            }
+            else
+            {
+                currentInteractable = null;
+            }
+        }
+        else
+        {
+            currentInteractable = null;
+        }
+    }
+
+    // Optional: Add this interface to define interactable objects
+    public interface IInteractable
+    {
+        void Interact();
     }
 }
