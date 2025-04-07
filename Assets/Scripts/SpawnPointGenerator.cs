@@ -110,11 +110,11 @@ public class SpawnPointGenerator : MonoBehaviour
         if (terrain == null)
         {
             // Try to find terrain by tag or other means
-            Terrain[] terrains = FindObjectsOfType<Terrain>();
+            Terrain[] terrains = FindObjectsByType<Terrain>(FindObjectsSortMode.None);
             if (terrains.Length > 0)
             {
                 terrain = terrains[0];
-                Debug.Log("Found terrain through FindObjectsOfType");
+                Debug.Log("Found terrain through FindObjectsByType");
             }
         }
         
