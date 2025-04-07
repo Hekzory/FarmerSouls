@@ -1,13 +1,15 @@
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Animator))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5.0f;
     [SerializeField] private float jumpForce = 8.0f;
     [SerializeField] private float gravity = 20.0f;
-    [SerializeField] private float rotationSpeed = 720f; // Smooth rotation speed
+    [SerializeField] private float rotationSpeed = 720f;
 
     [Header("Camera Settings")]
     [SerializeField] private float cameraSwitchCooldown = 0.5f;
@@ -32,6 +34,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
     private CharacterController characterController;
+    private Animator animator;
     private Vector3 moveDirection = Vector3.zero;
     private Camera firstPersonCamera;
     private Camera thirdPersonCamera;
@@ -50,12 +53,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         characterController = GetComponent<CharacterController>();
-        if (characterController == null)
-        {
-            Debug.LogError("CharacterController not found! Attach one to the player.");
-            enabled = false;
-            return;
-        }
+        animator = GetComponent<Animator>();
 
         // Cache renderers for performance
         if (playerVisuals != null)
@@ -246,7 +244,17 @@ public class PlayerController : MonoBehaviour
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-        Vector3 inputDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
+
+        // --- Animation Start ---
+        // Determine if the player is trying to move based on input magnitude.
+        // Using a small threshold avoids triggering walk for tiny joystick drift.
+        bool isMoving = Mathf.Abs(horizontalInput) > 0.1f || Mathf.Abs(verticalInput) > 0.1f;
+
+        // Set the "IsWalking" parameter in the Animator Controller
+        animator.SetBool("IsWalking", isMoving);
+        // --- Animation End ---
+
+        Vector3 inputDirection = new Vector3(horizontalInput, 0, verticalInput).normalized; // Used for rotation
 
         if (characterController.isGrounded)
         {
@@ -256,6 +264,7 @@ public class PlayerController : MonoBehaviour
             if (Input.GetButton("Jump") || Input.GetKey(jumpKey))
             {
                 moveDirection.y = jumpForce;
+                // Potential place to add animator.SetTrigger("Jump") later
             }
         }
         else
@@ -264,7 +273,9 @@ public class PlayerController : MonoBehaviour
             Vector3 horizontalMovement = CalculateMovementDirection(horizontalInput, verticalInput);
             moveDirection.x = horizontalMovement.x;
             moveDirection.z = horizontalMovement.z;
+             // Potential place to add animator.SetBool("IsGrounded", false) later
         }
+         // Potential place to add animator.SetBool("IsGrounded", characterController.isGrounded) always
 
         // Handle rotation in third-person mode
         if (!isFirstPerson && inputDirection != Vector3.zero)
@@ -367,7 +378,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Optional: Add this interface to define interactable objects
     public interface IInteractable
     {
         void Interact();
