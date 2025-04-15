@@ -1,7 +1,6 @@
 using UnityEngine;
 using Random = UnityEngine.Random; // Explicitly state usage of UnityEngine.Random
 
-// Nox Was Here. Painting the sky with fire and cosmic debris. (Corrected)
 [AddComponentMenu("Nox/Effects/Global Particle Manager")]
 public class GlobalParticleManager : MonoBehaviour
 {
