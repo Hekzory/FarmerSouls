@@ -1,5 +1,8 @@
 using UnityEngine;
+using UnityEngine.AI;
+using Unity.AI.Navigation;
 using System.Collections.Generic;
+using System;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -85,7 +88,20 @@ public class TerrainGenerator : MonoBehaviour
     private Terrain terrain;
     
     // List to store spawned garden beds
-    private List<GameObject> spawnedGardenBeds = new List<GameObject>();
+    public List<GameObject> spawnedGardenBeds { get; private set; } = new List<GameObject>();
+    private NavMeshSurface navMeshSurface;
+
+    // Event to signal NavMesh readiness
+    public static event Action OnNavMeshReady; // <--- Add this static event
+
+    void Awake()
+    {
+        navMeshSurface = GetComponent<NavMeshSurface>();
+        if (navMeshSurface == null)
+        {
+            Debug.LogError("NavMeshSurface component not found on this GameObject. Please add one.", this);
+        }
+    }
 
     void Start()
     {
@@ -98,6 +114,9 @@ public class TerrainGenerator : MonoBehaviour
         {
             Debug.LogWarning("Garden bed prefab not assigned. No garden beds will be generated.");
         }
+
+        // Bake the NavMesh AFTER terrain and beds are placed
+        BakeNavigation();
     }
 
     void GenerateTerrain()
@@ -148,7 +167,7 @@ public class TerrainGenerator : MonoBehaviour
     float[,] GenerateHeightMap()
     {
         float[,] heights = new float[width + 1, length + 1];
-        System.Random prng = new System.Random(Random.Range(0, 100000));
+        System.Random prng = new System.Random(UnityEngine.Random.Range(0, 100000));
         
         // Create offsets for each octave to make them sample different parts of the noise
         Vector2[] octaveOffsets = new Vector2[octaves];
@@ -260,8 +279,8 @@ public class TerrainGenerator : MonoBehaviour
             attempts++;
             
             // Get a random position within the terrain bounds
-            float randomX = Random.Range(0, width);
-            float randomZ = Random.Range(0, length);
+            float randomX = UnityEngine.Random.Range(0, width);
+            float randomZ = UnityEngine.Random.Range(0, length);
             
             // Convert to world position
             Vector3 worldPos = terrainGameObject.transform.position + new Vector3(randomX, 0, randomZ);
@@ -280,7 +299,7 @@ public class TerrainGenerator : MonoBehaviour
                 gardenBed.tag = gardenBedTag;
                 
                 // Apply random rotation around Y axis
-                float randomYRotation = Random.Range(0, 360f);
+                float randomYRotation = UnityEngine.Random.Range(0, 360f);
                 
                 if (alignToSlope)
                 {
@@ -306,6 +325,23 @@ public class TerrainGenerator : MonoBehaviour
         if (attempts >= maxAttempts && spawnedGardenBeds.Count < numberOfGardenBeds)
         {
             Debug.LogWarning($"Could only place {spawnedGardenBeds.Count} garden beds after maximum attempts. Try decreasing minimum distance or maximum slope angle.");
+        }
+    }
+
+    void BakeNavigation()
+    {
+        if (navMeshSurface != null)
+        {
+            Debug.Log("Baking NavMesh...");
+            navMeshSurface.BuildNavMesh();
+            Debug.Log("NavMesh baking complete.");
+            // Invoke the event AFTER successful baking
+            OnNavMeshReady?.Invoke(); // <--- Invoke the event here
+                                      // The ?. safely handles the case where no one is listening
+        }
+        else
+        {
+            Debug.LogError("Cannot bake NavMesh - NavMeshSurface component is missing!");
         }
     }
     
