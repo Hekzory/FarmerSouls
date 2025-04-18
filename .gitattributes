@@ -23,7 +23,26 @@
 *.prefab linguist-generated
 *.unity linguist-generated
 *.anim linguist-generated
-Assets/TextMesh*/ linguist-generated
+*.controller linguist-generated
+*.overrideController linguist-generated
+*.playable linguist-generated
+*.timeline linguist-generated
+*.mask linguist-generated
+*.preset linguist-generated
+*.spriteatlas linguist-generated
+*.flare linguist-generated
+*.rendertexture linguist-generated
+*.cubemap linguist-generated
+*.physicmaterial linguist-generated
+*.guiskin linguist-generated
+*.mixer linguist-generated
+*.signal linguist-generated
+*.giparams linguist-generated
+*.scenetemplate linguist-generated
+# Specific packages often generate assets too
+Assets/TextMesh[[:space:]]Pro/** linguist-generated
+# For URP/HDRP/Input System etc. settings
+Assets/**/Settings/*.asset linguist-generated
 
 # Ensure specific text files always use LF
 .gitignore text eol=lf
@@ -31,6 +50,11 @@ Assets/TextMesh*/ linguist-generated
 .cursorignore text eol=lf
 
 # Denote all files that are truly binary and should not be modified
+# Libraries
+*.dll binary
+*.so binary
+*.bundle binary
+
 # Images
 *.png binary
 *.jpg binary
