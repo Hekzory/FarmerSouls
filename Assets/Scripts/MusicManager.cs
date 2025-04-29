@@ -16,6 +16,21 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float fadeDuration = 1.5f;
     private Coroutine currentFadeCoroutine;
 
+    // Public property to access music volume
+    public float MusicVolume
+    {
+        get { return musicVolume; }
+        set
+        {
+            musicVolume = Mathf.Clamp01(value); // Ensure value is between 0 and 1
+            if (musicSource != null && musicSource.isPlaying)
+            {
+                // Apply volume change immediately if music is playing
+                musicSource.volume = musicVolume;
+            }
+        }
+    }
+
     void Awake()
     {
         // Singleton Logic: Ensure only one instance exists
