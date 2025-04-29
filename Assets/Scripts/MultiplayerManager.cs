@@ -34,7 +34,6 @@ public class MultiplayerManager : MonoBehaviour
     private UdpClient udpListener;       // For receiving messages (server mode)
     private UdpClient udpClientListener; // For receiving messages (client mode)
     private IPEndPoint serverEndPoint;   // Server endpoint for client
-    private bool allowBroadcast = true;  // Allow UDP broadcasts
 
     private Thread receiveThread;        // Server receive thread
     private Thread clientReceiveThread;  // Client receive thread
