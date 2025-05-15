@@ -134,4 +134,4 @@ fmod.log
 
 # Symbolic links in Windows
 *.lnk
-out/
+# out/
